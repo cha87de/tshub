@@ -1,0 +1,25 @@
+# Build customization
+builds:
+  - main: ./cmd/tshub
+    binary: tshub
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+nfpm:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+  vendor: Christopher B. Hauser
+  homepage: https://cha87de.github.io/tsprofiler/
+  maintainer: Christopher B. Hauser <post@c-ha.de>
+  description: A communication endpoint for kvmtop and kvmprofiler
+  license: GPL-3.0
+
+  # Formats to be generated.
+  formats:
+    - deb
+    - rpm
+
+  # Override default /usr/local/bin destination for binaries
+  bindir: /usr/bin

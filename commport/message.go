@@ -1,0 +1,57 @@
+package commport
+
+import (
+	"encoding/json"
+	"errors"
+
+	kvmtopmodels "github.com/cha87de/kvmtop/models"
+	tsmodels "github.com/cha87de/tsprofiler/models"
+)
+
+// Message represents a single received message and is of type MessageType
+type Message struct {
+	Type      MessageType
+	TSProfile tsmodels.TSProfile
+	TSData    kvmtopmodels.TSData
+}
+
+// MessageType represents the `Message`'s type
+type MessageType int
+
+const (
+	// MessageTSProfile defines the MessageType as a TSProfile message
+	MessageTSProfile MessageType = 0
+	// MessageTSData defines the MessageType as a TSData message
+	MessageTSData MessageType = 1
+)
+
+// MarshalJSON marshals Message depending on its type
+func (message *Message) MarshalJSON() ([]byte, error) {
+	if message.Type == MessageTSProfile {
+		return json.Marshal(message.TSProfile)
+	} else if message.Type == MessageTSData {
+		return json.Marshal(message.TSData)
+	} else {
+		return json.Marshal(nil)
+	}
+}
+
+// UnmarshalJSON unmarshals a Message depending on the identified MessageType
+func (message *Message) UnmarshalJSON(data []byte) error {
+	var temp map[string]*json.RawMessage
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+	if _, ok := temp["host"]; ok {
+		// assume TSData
+		message.Type = MessageTSData
+		json.Unmarshal(data, &message.TSData)
+	} else if _, ok := temp["periodTree"]; ok {
+		// assume TSProfile
+		message.Type = MessageTSProfile
+		json.Unmarshal(data, &message.TSProfile)
+	} else {
+		return errors.New("Invalid object value")
+	}
+	return nil
+}

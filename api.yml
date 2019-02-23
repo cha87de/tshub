@@ -1,0 +1,46 @@
+swagger: '2.0'
+info:
+  title: TSHub API
+  description: The REST API for the TimeSeries-Profiler
+  version: "0.1"
+  contact:
+    name: post@c-ha.de
+host: localhost:8080
+schemes:
+  - http
+basePath: /v0.1
+produces:
+  - application/json
+paths:
+  /profiles:
+    get:
+      summary: Get a list of names from stored profiles
+      operationId: getProfileNames
+      responses:
+        200:
+          description: An array profile names
+          schema:
+            type: array
+            items:
+              type: string
+        500:  
+          description: Internal Server Error
+     
+  /profile/{profilename}:
+    get:
+      summary: Get the full profile by given name
+      operationId: getProfile
+      parameters:
+        - in: path
+          name: profilename
+          required: true
+          type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: string
+        404:
+          description: Element not found
+        500:  
+          description: Internal Server Error  
