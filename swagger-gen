@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ -z ${GOPATH+z} ]; then
+    echo "GOPATH undefined!"
+    exit 1
+fi
+
+swagger generate server --exclude-main  -A tshub-api -f api.yml
