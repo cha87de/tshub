@@ -1,0 +1,58 @@
+
+<div *ngIf="hostname != ''">
+	Domains for Hostname {{ hostname }}
+</div>
+
+<mat-grid-list cols="2">
+	<mat-grid-tile colspan="2" rowspan="1" *ngFor="let domain of domains">
+		<mat-card>
+			<mat-card-header>
+				<mat-card-title>{{ domain.name }}</mat-card-title>
+				<mat-card-subtitle>{{ domain.cores }} CPU Cores, {{ domain.ram | fileSize:0 }} Ram</mat-card-subtitle>
+			</mat-card-header>
+			<mat-card-content>
+
+				<mat-grid-list cols="3">
+					<mat-grid-tile colspan="1" rowspan="1">
+						<mat-card>
+							<mat-card-header>
+								<mat-card-title>CPU Util</mat-card-title>
+							</mat-card-header>
+							<mat-card-content>
+								<plotter-plotdata [domain]="domain" metric="cpu"></plotter-plotdata>
+							</mat-card-content>
+						</mat-card>
+					</mat-grid-tile>
+					<mat-grid-tile colspan="1" rowspan="1">
+						<mat-card>
+							<mat-card-header>
+								<mat-card-title>Net I/O</mat-card-title>
+							</mat-card-header>
+							<mat-card-content>
+								<plotter-plotdata [domain]="domain" metric="netio"></plotter-plotdata>
+							</mat-card-content>
+						</mat-card>
+					</mat-grid-tile>
+					<mat-grid-tile colspan="1" rowspan="1">
+						<mat-card>
+							<mat-card-header>
+								<mat-card-title>Disk I/O</mat-card-title>
+							</mat-card-header>
+							<mat-card-content>
+								<plotter-plotdata [domain]="domain" metric="diskio"></plotter-plotdata>
+							</mat-card-content>
+						</mat-card>
+					</mat-grid-tile>
+				</mat-grid-list>
+
+			</mat-card-content>
+			<mat-card-actions>
+					<!-- 
+					<a mat-button [routerLink]="['/domain/', domain.name]">
+						Domain Details
+					</a>
+					-->
+			</mat-card-actions>
+		</mat-card>
+	</mat-grid-tile>
+</mat-grid-list>

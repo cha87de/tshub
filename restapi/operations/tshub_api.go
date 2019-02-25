@@ -37,6 +37,24 @@ func NewTshubAPI(spec *loads.Document) *TshubAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		GetDomainHandler: GetDomainHandlerFunc(func(params GetDomainParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetDomain has not yet been implemented")
+		}),
+		GetDomainPlotdataHandler: GetDomainPlotdataHandlerFunc(func(params GetDomainPlotdataParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetDomainPlotdata has not yet been implemented")
+		}),
+		GetDomainsHandler: GetDomainsHandlerFunc(func(params GetDomainsParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetDomains has not yet been implemented")
+		}),
+		GetHostHandler: GetHostHandlerFunc(func(params GetHostParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetHost has not yet been implemented")
+		}),
+		GetHostPlotdataHandler: GetHostPlotdataHandlerFunc(func(params GetHostPlotdataParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetHostPlotdata has not yet been implemented")
+		}),
+		GetHostsHandler: GetHostsHandlerFunc(func(params GetHostsParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetHosts has not yet been implemented")
+		}),
 		GetProfileHandler: GetProfileHandlerFunc(func(params GetProfileParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetProfile has not yet been implemented")
 		}),
@@ -74,6 +92,18 @@ type TshubAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
+	// GetDomainHandler sets the operation handler for the get domain operation
+	GetDomainHandler GetDomainHandler
+	// GetDomainPlotdataHandler sets the operation handler for the get domain plotdata operation
+	GetDomainPlotdataHandler GetDomainPlotdataHandler
+	// GetDomainsHandler sets the operation handler for the get domains operation
+	GetDomainsHandler GetDomainsHandler
+	// GetHostHandler sets the operation handler for the get host operation
+	GetHostHandler GetHostHandler
+	// GetHostPlotdataHandler sets the operation handler for the get host plotdata operation
+	GetHostPlotdataHandler GetHostPlotdataHandler
+	// GetHostsHandler sets the operation handler for the get hosts operation
+	GetHostsHandler GetHostsHandler
 	// GetProfileHandler sets the operation handler for the get profile operation
 	GetProfileHandler GetProfileHandler
 	// GetProfileNamesHandler sets the operation handler for the get profile names operation
@@ -139,6 +169,30 @@ func (o *TshubAPI) Validate() error {
 
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
+	}
+
+	if o.GetDomainHandler == nil {
+		unregistered = append(unregistered, "GetDomainHandler")
+	}
+
+	if o.GetDomainPlotdataHandler == nil {
+		unregistered = append(unregistered, "GetDomainPlotdataHandler")
+	}
+
+	if o.GetDomainsHandler == nil {
+		unregistered = append(unregistered, "GetDomainsHandler")
+	}
+
+	if o.GetHostHandler == nil {
+		unregistered = append(unregistered, "GetHostHandler")
+	}
+
+	if o.GetHostPlotdataHandler == nil {
+		unregistered = append(unregistered, "GetHostPlotdataHandler")
+	}
+
+	if o.GetHostsHandler == nil {
+		unregistered = append(unregistered, "GetHostsHandler")
 	}
 
 	if o.GetProfileHandler == nil {
@@ -246,6 +300,36 @@ func (o *TshubAPI) initHandlerCache() {
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/domain/{domainname}"] = NewGetDomain(o.context, o.GetDomainHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/domain/{domainname}/plotdata"] = NewGetDomainPlotdata(o.context, o.GetDomainPlotdataHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/domains"] = NewGetDomains(o.context, o.GetDomainsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/host/{hostname}"] = NewGetHost(o.context, o.GetHostHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/host/{hostname}/plotdata"] = NewGetHostPlotdata(o.context, o.GetHostPlotdataHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/hosts"] = NewGetHosts(o.context, o.GetHostsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

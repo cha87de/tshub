@@ -1,8 +1,14 @@
 #!/bin/bash
 
+# export go server
 if [ -z ${GOPATH+z} ]; then
     echo "GOPATH undefined!"
     exit 1
 fi
-
 swagger generate server --exclude-main  -A tshub-api -f api.yml
+
+# export typescript-angular2 services and models
+java -jar swagger-codegen-cli.jar generate -i api.yml -l typescript-angular -o ./webui/src/app/api/ -c ./webui/config.json
+
+# export API docs
+java -jar swagger-codegen-cli.jar generate -i api.yml -l html -o ./docs/api/

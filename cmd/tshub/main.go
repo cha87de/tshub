@@ -8,7 +8,6 @@ import (
 	"github.com/cha87de/tshub/restapi"
 	"github.com/cha87de/tshub/restapi/operations"
 	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime/middleware"
 )
 
 func main() {
@@ -19,8 +18,8 @@ func main() {
 	commAddr := "127.0.0.1:12345"
 
 	// first: main tshub features
-	datahub := datahub.NewHub()
-	commportServer := commport.NewServer(commType, commAddr, datahub)
+	dh := datahub.NewHub()
+	commportServer := commport.NewServer(commType, commAddr, dh)
 	go commportServer.Start()
 
 	// second: swagger api
@@ -29,19 +28,9 @@ func main() {
 		log.Fatalln(err)
 	}
 	api := operations.NewTshubAPI(swaggerSpec)
-	api.GetProfileNamesHandler = operations.GetProfileNamesHandlerFunc(func(params operations.GetProfileNamesParams) middleware.Responder {
-		names := datahub.Store.GetNames()
-		return operations.NewGetProfileNamesOK().WithPayload(names)
-	})
-	api.GetProfileHandler = operations.GetProfileHandlerFunc(func(params operations.GetProfileParams) middleware.Responder {
-		name := params.Profilename
-		profile, err := datahub.Store.GetByName(name)
-		if err != nil {
-			return operations.NewGetProfileNotFound()
-		}
-		return operations.NewGetProfileOK().WithPayload(profile)
-	})
+	configureAPI(api, dh)
 	server := restapi.NewServer(api)
+	server.ConfigureAPI()
 	defer server.Shutdown()
 	server.Port = apiPort
 	if err := server.Serve(); err != nil {

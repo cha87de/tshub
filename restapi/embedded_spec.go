@@ -36,6 +36,187 @@ func init() {
   "host": "localhost:8080",
   "basePath": "/v0.1",
   "paths": {
+    "/domain/{domainname}": {
+      "get": {
+        "summary": "Get details of given domain by its name",
+        "operationId": "getDomain",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "domainname",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of domains",
+            "schema": {
+              "$ref": "#/definitions/DomainDetails"
+            }
+          },
+          "404": {
+            "description": "Element not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/domain/{domainname}/plotdata": {
+      "get": {
+        "summary": "Returns the plotdata (past and prediction) of given domain and metric",
+        "operationId": "getDomainPlotdata",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "domainname",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "metric",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "timeframe",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "plotdata for given domain and metric",
+            "schema": {
+              "$ref": "#/definitions/PlotData"
+            }
+          },
+          "404": {
+            "description": "Element not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/domains": {
+      "get": {
+        "summary": "Get a list of available domains (virtual machines / containers)",
+        "operationId": "getDomains",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "hostname",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of domains",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Domain"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/host/{hostname}": {
+      "get": {
+        "summary": "Get details of the given host",
+        "operationId": "getHost",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "hostname",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Host details",
+            "schema": {
+              "$ref": "#/definitions/HostDetails"
+            }
+          },
+          "404": {
+            "description": "Element not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/host/{hostname}/plotdata": {
+      "get": {
+        "summary": "Returns the plotdata (past and prediction) of given host and metric",
+        "operationId": "getHostPlotdata",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "hostname",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "metric",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "timeframe",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "plotdata for given host and metric",
+            "schema": {
+              "$ref": "#/definitions/PlotData"
+            }
+          },
+          "404": {
+            "description": "Element not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/hosts": {
+      "get": {
+        "summary": "Get a list of available physical hosts",
+        "operationId": "getHosts",
+        "responses": {
+          "200": {
+            "description": "An array of hosts",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Host"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/profile/{profilename}": {
       "get": {
         "summary": "Get the full profile by given name",
@@ -89,7 +270,111 @@ func init() {
     }
   },
   "definitions": {
-    "AnyValue": {}
+    "AnyValue": {},
+    "Domain": {
+      "type": "object",
+      "properties": {
+        "cores": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ram": {
+          "type": "integer"
+        }
+      }
+    },
+    "DomainDetails": {
+      "type": "object",
+      "properties": {
+        "cores": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ram": {
+          "type": "integer"
+        }
+      }
+    },
+    "Host": {
+      "type": "object",
+      "properties": {
+        "cores": {
+          "type": "integer"
+        },
+        "instancecount": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ram": {
+          "type": "integer"
+        }
+      }
+    },
+    "HostDetails": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "overbooking": {
+          "type": "object",
+          "properties": {
+            "cpuCores": {
+              "type": "integer"
+            },
+            "cpuUtil": {
+              "type": "integer"
+            },
+            "diskIO": {
+              "type": "integer"
+            },
+            "netIO": {
+              "type": "integer"
+            },
+            "ram": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "PlotData": {
+      "type": "object",
+      "properties": {
+        "future": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PlotDataItem"
+          }
+        },
+        "metric": {
+          "type": "string"
+        },
+        "past": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PlotDataItem"
+          }
+        }
+      }
+    },
+    "PlotDataItem": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "integer"
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    }
   }
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
@@ -111,6 +396,187 @@ func init() {
   "host": "localhost:8080",
   "basePath": "/v0.1",
   "paths": {
+    "/domain/{domainname}": {
+      "get": {
+        "summary": "Get details of given domain by its name",
+        "operationId": "getDomain",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "domainname",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of domains",
+            "schema": {
+              "$ref": "#/definitions/DomainDetails"
+            }
+          },
+          "404": {
+            "description": "Element not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/domain/{domainname}/plotdata": {
+      "get": {
+        "summary": "Returns the plotdata (past and prediction) of given domain and metric",
+        "operationId": "getDomainPlotdata",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "domainname",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "metric",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "timeframe",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "plotdata for given domain and metric",
+            "schema": {
+              "$ref": "#/definitions/PlotData"
+            }
+          },
+          "404": {
+            "description": "Element not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/domains": {
+      "get": {
+        "summary": "Get a list of available domains (virtual machines / containers)",
+        "operationId": "getDomains",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "hostname",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of domains",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Domain"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/host/{hostname}": {
+      "get": {
+        "summary": "Get details of the given host",
+        "operationId": "getHost",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "hostname",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Host details",
+            "schema": {
+              "$ref": "#/definitions/HostDetails"
+            }
+          },
+          "404": {
+            "description": "Element not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/host/{hostname}/plotdata": {
+      "get": {
+        "summary": "Returns the plotdata (past and prediction) of given host and metric",
+        "operationId": "getHostPlotdata",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "hostname",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "metric",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "timeframe",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "plotdata for given host and metric",
+            "schema": {
+              "$ref": "#/definitions/PlotData"
+            }
+          },
+          "404": {
+            "description": "Element not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/hosts": {
+      "get": {
+        "summary": "Get a list of available physical hosts",
+        "operationId": "getHosts",
+        "responses": {
+          "200": {
+            "description": "An array of hosts",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Host"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/profile/{profilename}": {
       "get": {
         "summary": "Get the full profile by given name",
@@ -164,7 +630,111 @@ func init() {
     }
   },
   "definitions": {
-    "AnyValue": {}
+    "AnyValue": {},
+    "Domain": {
+      "type": "object",
+      "properties": {
+        "cores": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ram": {
+          "type": "integer"
+        }
+      }
+    },
+    "DomainDetails": {
+      "type": "object",
+      "properties": {
+        "cores": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ram": {
+          "type": "integer"
+        }
+      }
+    },
+    "Host": {
+      "type": "object",
+      "properties": {
+        "cores": {
+          "type": "integer"
+        },
+        "instancecount": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ram": {
+          "type": "integer"
+        }
+      }
+    },
+    "HostDetails": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "overbooking": {
+          "type": "object",
+          "properties": {
+            "cpuCores": {
+              "type": "integer"
+            },
+            "cpuUtil": {
+              "type": "integer"
+            },
+            "diskIO": {
+              "type": "integer"
+            },
+            "netIO": {
+              "type": "integer"
+            },
+            "ram": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "PlotData": {
+      "type": "object",
+      "properties": {
+        "future": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PlotDataItem"
+          }
+        },
+        "metric": {
+          "type": "string"
+        },
+        "past": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PlotDataItem"
+          }
+        }
+      }
+    },
+    "PlotDataItem": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "integer"
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    }
   }
 }`))
 }

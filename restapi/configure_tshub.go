@@ -8,7 +8,7 @@ import (
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/rs/cors"
 
 	"github.com/cha87de/tshub/restapi/operations"
 )
@@ -32,13 +32,6 @@ func configureAPI(api *operations.TshubAPI) http.Handler {
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
-
-	api.GetProfileHandler = operations.GetProfileHandlerFunc(func(params operations.GetProfileParams) middleware.Responder {
-		return middleware.NotImplemented("operation .GetProfile has not yet been implemented")
-	})
-	api.GetProfileNamesHandler = operations.GetProfileNamesHandlerFunc(func(params operations.GetProfileNamesParams) middleware.Responder {
-		return middleware.NotImplemented("operation .GetProfileNames has not yet been implemented")
-	})
 
 	api.ServerShutdown = func() {}
 
@@ -66,5 +59,6 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	return handler
+	handleCORS := cors.Default().Handler
+	return handleCORS(handler)
 }
