@@ -46,12 +46,16 @@ func (message *Message) UnmarshalJSON(data []byte) error {
 		// assume TSData
 		message.Type = MessageTSData
 		json.Unmarshal(data, &message.TSData)
-	} else if _, ok := temp["periodTree"]; ok {
+	} else if profile, ok := temp["profile"]; ok {
 		// assume TSProfile
 		message.Type = MessageTSProfile
-		json.Unmarshal(data, &message.TSProfile)
+		profileData, err := profile.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		json.Unmarshal(profileData, &message.TSProfile)
 	} else {
-		return errors.New("Invalid object value")
+		return errors.New("invalid object value, neither TSData nor TSProfile")
 	}
 	return nil
 }

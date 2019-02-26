@@ -1,13 +1,28 @@
 <mat-toolbar color="primary">
-	<span>TSHub - communication endpoint for kvmtop and kvmprofiler</span>
+
+	<mat-icon>home</mat-icon>
+	<h1>
+		TSHub - endpoint for kvmtop and kvmprofiler
+	</h1>
+
 	<span class="fill-remaining-space"></span>
-	<mat-form-field>
-		<mat-select value="1">
-			<mat-option value="5">24h</mat-option>
-			<mat-option value="4">12h</mat-option>
-			<mat-option value="3">1h</mat-option>
-			<mat-option value="2">30min</mat-option>
-			<mat-option value="1">1min</mat-option>
-		</mat-select>
-	</mat-form-field>
+
+	<div>
+		<mat-form-field>
+			<mat-select [(ngModel)]="timeframe" (ngModelChange)="onTimeframeChange($event)">
+				<mat-option value="4">24h</mat-option>
+				<mat-option value="3">12h</mat-option>
+				<mat-option value="2">1h</mat-option>
+				<mat-option value="1">30min</mat-option>
+				<mat-option value="0">1min</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+
+	<div>
+		<button mat-stroked-button (click)="reload()">
+			<mat-icon>sync</mat-icon> reload
+		</button>
+	</div>
+
 </mat-toolbar>

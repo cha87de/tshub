@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ListComponent } from './list/list.component';
 import { DomainRoutingModule } from './domain-routing.module';
 
-import { MatButtonModule } from '@angular/material';
+import { MatButtonModule, MatDividerModule, MatChipsModule } from '@angular/material';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatCardModule } from '@angular/material/card';
@@ -34,7 +34,10 @@ import { PlotterModule } from '../plotter/plotter.module';
     MatCardModule,
     MatListModule,
     MatGridListModule,
-    MatSelectModule        
+    MatSelectModule,
+    MatDividerModule,
+    MatChipsModule,
+
   ]
 })
 export class DomainModule { }

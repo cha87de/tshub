@@ -1,5 +1,5 @@
-<mat-grid-list cols="4">
-	<mat-grid-tile colspan="2" rowspan="1" *ngFor="let host of hosts">
+<mat-grid-list cols="1">
+	<mat-grid-tile colspan="1" rowspan="1" *ngFor="let host of hosts">
 		<mat-card>
 			<mat-card-header>
 				<mat-card-title>{{ host.name }}</mat-card-title>
@@ -14,7 +14,7 @@
 								<mat-card-title>CPU Util</mat-card-title>
 							</mat-card-header>
 							<mat-card-content>
-								PLACE GRAPH HERE
+								<plotter-plotdata [host]="host" metric="cpu"></plotter-plotdata>
 							</mat-card-content>
 						</mat-card>
 					</mat-grid-tile>
@@ -24,7 +24,7 @@
 								<mat-card-title>Net I/O</mat-card-title>
 							</mat-card-header>
 							<mat-card-content>
-								PLACE GRAPH HERE
+								<plotter-plotdata [host]="host" metric="netio"></plotter-plotdata>
 							</mat-card-content>
 						</mat-card>
 					</mat-grid-tile>
@@ -34,7 +34,7 @@
 								<mat-card-title>Disk I/O</mat-card-title>
 							</mat-card-header>
 							<mat-card-content>
-								PLACE GRAPH HERE
+								<plotter-plotdata [host]="host" metric="diskio"></plotter-plotdata>
 							</mat-card-content>
 						</mat-card>
 					</mat-grid-tile>

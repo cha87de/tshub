@@ -67,9 +67,9 @@ func (streamer *Streamer) Put(tsdata kvmtopmodels.TSData) {
 	}
 
 	// update host measurements
-	tsdata.Host["instances"] = len(tsdata.Domains)
+	tsdata.Host["instances"] = float64(len(tsdata.Domains))
 	if _, exists := streamer.Hosts[hostname]; !exists {
-		streamer.Hosts[hostname] = make([]*tsdb.Store, 1)
+		streamer.Hosts[hostname] = make([]*tsdb.Store, 5)
 		streamer.Hosts[hostname][0] = tsdb.NewStore(30, resolution1min)
 		streamer.Hosts[hostname][1] = tsdb.NewStore(30, resolution30min)
 		streamer.Hosts[hostname][2] = tsdb.NewStore(30, resolution1h)

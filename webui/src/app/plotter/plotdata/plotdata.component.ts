@@ -1,6 +1,8 @@
-import { Component, OnInit, Input, AfterViewInit, ElementRef, ViewChild  } from '@angular/core';
-import { DefaultService, Domain, PlotData } from 'src/app/api';
+import { Component, OnInit, Input, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { DefaultService, Domain, PlotData, Host } from 'src/app/api';
 import { Chart } from 'chart.js';
+import { SettingsService } from 'src/app/settings.service';
+import { Subscription, timer } from 'rxjs';
 
 @Component({
 	selector: 'plotter-plotdata',
@@ -10,19 +12,38 @@ import { Chart } from 'chart.js';
 export class PlotdataComponent implements OnInit, AfterViewInit {
 
 	@Input() domain: Domain;
+	@Input() host: Host;
 	@Input() metric: string;
 
-    @ViewChild('canvas') canvas: ElementRef;
+	@ViewChild('canvas') canvas: ElementRef;
 
 	plotdata: PlotData;
 	chart: Chart;
 	pastData: {}[] = [];
 	futureData: {}[] = [];
 
-	constructor(private defaultService: DefaultService) { }
+	reloadSubscription: Subscription;
+	autoReloadSubscription: Subscription;
+
+	constructor(private defaultService: DefaultService, private settingsService: SettingsService) { }
 
 	ngOnInit() {
 		this.queryData();
+
+		// register to reload event
+		this.reloadSubscription = this.settingsService.reloadObservable.subscribe(
+			reload => {
+				// this.queryData();
+			}
+		);
+
+		this.autoReload();
+
+	}
+
+	ngOnDestroy() {
+		this.reloadSubscription.unsubscribe();
+		this.autoReloadSubscription.unsubscribe();
 	}
 
 	ngAfterViewInit() {
@@ -30,123 +51,108 @@ export class PlotdataComponent implements OnInit, AfterViewInit {
 	}
 
 	queryData() {
-		const dataQuery = this.defaultService.getDomainPlotdata(this.domain.name, this.metric, "1h")
-		dataQuery.toPromise().then((plotdata) => {
-			this.plotdata = plotdata;
-			this.plotdata.past.forEach((item) => {
-				let value = 0;
-				let ts = 0;
-				if (item.value !== undefined) {
-					value = item.value;
-				}
-				if (item.timestamp !== undefined) {
-					ts = item.timestamp;
-				}
-				let point = {
-					x: ts,
-					y: value
-				};
-				// console.info(point, item);
-				this.pastData.push(point);
-			});
+		const timeframe = this.settingsService.timeframe;
+		if (this.domain != undefined) {
+			// query domain
+			this.queryDataDomain(timeframe);
+		} else if (this.host != undefined) {
+			// query host
+			this.queryDataHost(timeframe);
+		}
+	}
 
-			this.plotdata.past.forEach((item) => {
-				let value = 0;
-				let ts = 30;
-				if (item.value !== undefined) {
-					value = item.value;
-				}
-				if (item.timestamp !== undefined) {
-					ts = item.timestamp + 30;
-				}
-				let point = {
-					x: ts,
-					y: value
-				};
-				// console.info(point, item);
-				this.futureData.push(point);
-			});			
+	autoReload() {
+		const source = timer(1000, 2000);
+		this.autoReloadSubscription = source.subscribe(val => {
+			// reload
+			// console.info("reload");
+			this.pastData = [];
+			this.queryData();
 		});
 	}
 
+	queryDataDomain(timeframe: string) {
+		const dataQuery = this.defaultService.getDomainPlotdata(this.domain.name, this.metric, timeframe)
+		dataQuery.toPromise().then((plotdata) => {
+			this.handlePlotdata(plotdata);
+		});
+	}
+
+	queryDataHost(timeframe: string) {
+		const dataQuery = this.defaultService.getHostPlotdata(this.host.name, this.metric, timeframe)
+		dataQuery.toPromise().then((plotdata) => {
+			this.handlePlotdata(plotdata);
+		});
+	}
+
+	handlePlotdata(plotdata) {
+		this.plotdata = plotdata;
+		this.plotdata.past.forEach((item) => {
+			let value = 0;
+			let ts = 0;
+			if (item.value !== undefined) {
+				value = item.value;
+			}
+			if (item.timestamp !== undefined) {
+				ts = item.timestamp;
+			}
+			let point = {
+				x: ts,
+				y: value
+			};
+			// console.info(point, item);
+			this.pastData.push(point);
+		});
+		if (this.chart !== undefined) {
+			// update chart
+			this.chart.data.datasets[0].data = this.pastData;
+			this.chart.update();			
+		}
+	}
+
 	createChart() {
-		const cdata = {
-			// labels: Array(this.pastData.length).fill(''),
-			datasets: [
-				{
-					label: 'past',
-					borderColor: "#3f51b5",
-					data: this.pastData,
-					pointRadius: 0.1
-				},
-				{
-					label: 'future',
-					borderColor: "#689F38",
-					data: this.futureData,
-					pointRadius: 0.1
-				}				
-			]
-		};
+		if (this.chart !== undefined) {
+			return;
+		}
+
 		const ctx = this.canvas.nativeElement.getContext('2d');
 		this.chart = new Chart(ctx, {
 			type: 'line',
-			data: cdata,
+			data: {
+				datasets: [
+					{
+						label: 'past',
+						borderColor: "#3f51b5",
+						data: this.pastData,
+						pointRadius: 0.1
+					}
+					/*{
+						label: 'future',
+						borderColor: "#689F38",
+						data: this.futureData,
+						pointRadius: 0.1
+					}*/
+				]
+			},
 			options: {
 				title: {
 					display: false
-				 },
-				 scales: {
-					xAxes: [{
-					   type: 'linear',
-					   /*ticks: {
-						  suggestedMin: 0,
-						  suggestedMax: 30,
-						  stepSize: 1 //interval between ticks
-					   }*/
-					}],
-					yAxes: [{
-					   display: true,
-					   /*ticks: {
-						  suggestedMin: 0,
-						  suggestedMax: 100
-					   }*/
-					}]
-				 }				
-				/*animation: {
-					duration: 0
-				},
-				responsive: true,
-				maintainAspectRatio: false,
-				responsiveAnimationDuration: 0,
-				legend: {
-					display: true,
-					labels: {
-						boxWidth: 20
-					}
 				},
 				scales: {
 					xAxes: [{
-						stacked: false,
-						display: true,
-						ticks: {
-							beginAtZero: true,
-							steps:1,
-							stepValue:1,
-							max:30
-						}						
+						type: 'linear'
 					}],
 					yAxes: [{
-						stacked: false,
-						scaleLabel: {
-							display: true,
-							labelString: 'Utilisation'
+						display: true,
+						ticks: {
+							min: 0
 						}
 					}]
 				},
-				tooltips: {
-				}*/
+				animation: false
 			}
 		});
+
 	}
 
 }

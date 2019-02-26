@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/cha87de/tshub/datahub"
 	"github.com/cha87de/tshub/models"
 	"github.com/cha87de/tshub/restapi/operations"
@@ -15,11 +17,14 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 		hosts := make([]*models.Host, len(datahub.Streamer.Hosts))
 		i := 0
 		for hostname, host := range datahub.Streamer.Hosts {
+			cores, _ := util.GetFloat(host[0].Latest("cpu_cores"))
+			instances, _ := util.GetFloat(host[0].Latest("instances"))
+			ram, _ := util.GetFloat(host[0].Latest("ram_Total"))
 			hostModel := &models.Host{
 				Name:          hostname,
-				Cores:         int64(host[0].Latest("cpu_cores").(float64)),
-				Instancecount: int64(host[0].Latest("instances").(int)),
-				RAM:           int64(host[0].Latest("ram_Total").(float64)),
+				Cores:         int64(cores),
+				Instancecount: int64(instances),
+				RAM:           int64(ram),
 			}
 			hosts[i] = hostModel
 			i++
@@ -46,7 +51,48 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 
 	// implementaiton for /host/{hostname}/plotdata
 	api.GetHostPlotdataHandler = operations.GetHostPlotdataHandlerFunc(func(params operations.GetHostPlotdataParams) middleware.Responder {
-		return operations.NewGetHostPlotdataInternalServerError()
+
+		// return operations.NewGetDomainPlotdataInternalServerError()
+		hostname := params.Hostname
+		metric := params.Metric
+		// timeframe := params.Timeframe
+
+		hostStores, ok := datahub.Streamer.Hosts[hostname]
+		if !ok {
+			return operations.NewGetHostPlotdataNotFound()
+		}
+		hostTimeframeStore := hostStores[0] // TODO align with timeframe param
+		internalMetric := ""
+		if metric == "cpu" {
+			internalMetric = "cpu_total"
+		} else if metric == "diskio" {
+			internalMetric = "disk_io"
+		} else if metric == "netio" {
+			internalMetric = "net_io"
+		}
+		pastData := hostTimeframeStore.Dump(internalMetric)
+
+		past := make([]*models.PlotDataItem, len(pastData))
+		for i, data := range pastData {
+			ts := int64(i)
+			val, err := util.GetFloat(data)
+			if err != nil {
+				val = float64(0)
+			}
+			past[i] = &models.PlotDataItem{
+				Timestamp: ts,
+				Value:     val,
+			}
+		}
+
+		plotdata := &models.PlotData{
+			Metric: metric,
+			Future: []*models.PlotDataItem{},
+			Past:   past,
+		}
+
+		return operations.NewGetHostPlotdataOK().WithPayload(plotdata)
+
 	})
 
 	// implementaiton for /domains
@@ -81,16 +127,18 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 
 	// implementaiton for /domain/{domainname}/plotdata
 	api.GetDomainPlotdataHandler = operations.GetDomainPlotdataHandlerFunc(func(params operations.GetDomainPlotdataParams) middleware.Responder {
-		// return operations.NewGetDomainPlotdataInternalServerError()
 		domainname := params.Domainname
 		metric := params.Metric
-		// timeframe := params.Timeframe
-
 		domainStores, ok := datahub.Streamer.Domains[domainname]
 		if !ok {
 			return operations.NewGetDomainPlotdataNotFound()
 		}
-		domainTimeframeStore := domainStores[0] // TODO align with timeframe param
+		timeframe, err := strconv.Atoi(*params.Timeframe)
+		if err != nil || timeframe < 0 || timeframe > len(domainStores) {
+			return operations.NewGetDomainPlotdataInternalServerError()
+		}
+
+		domainTimeframeStore := domainStores[timeframe]
 		internalMetric := ""
 		if metric == "cpu" {
 			internalMetric = "cpu_total"
@@ -121,7 +169,6 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 		}
 
 		return operations.NewGetDomainPlotdataOK().WithPayload(plotdata)
-
 	})
 
 	// implementation for /profiles

@@ -1,2 +1,10 @@
-<h1>Domain View</h1>
+<mat-toolbar color="secondary">
+	<h2>Domains</h2>
+
+	<span class="fill-remaining-space"></span>
+
+	<mat-chip-list *ngIf="hostname != ''">
+		<mat-chip>Host: {{ hostname }}</mat-chip>
+	</mat-chip-list>
+</mat-toolbar>
 <router-outlet></router-outlet>

@@ -1,7 +1,6 @@
 package tsdb
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -42,15 +41,15 @@ func (store *Store) Add(values map[string]interface{}) {
 func (store *Store) rotate(item Item) {
 	emptyValues := make(map[string]interface{})
 	if len(store.items) == 0 {
-		fmt.Printf("add first empty item ... \n")
+		// fmt.Printf("add first empty item ... \n")
 		store.items = append(store.items, *NewItem(emptyValues))
 		return
 	}
 	lastItem := store.items[len(store.items)-1]
 	rotateTime := lastItem.Timestamp.Add(store.durationPerSlot)
-	fmt.Printf("rotate at %+v\n", rotateTime)
+	// fmt.Printf("rotate at %+v\n", rotateTime)
 	if rotateTime.Before(item.Timestamp) {
-		fmt.Printf("time to rotate ... \n")
+		// fmt.Printf("time to rotate ... \n")
 		if len(store.items) < store.HistorySize {
 			// still growing ... append new item
 			store.items = append(store.items, *NewItem(emptyValues))

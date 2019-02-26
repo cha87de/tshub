@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'domain-main',
@@ -7,9 +8,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class MainComponent implements OnInit {
 
-  constructor() { }
+  hostname: string;
 
-  ngOnInit() {
-  }
+  constructor(private route: ActivatedRoute) { }
+	
+	ngOnInit() {
+		this.route.queryParams
+		.filter(params => params.hostname)
+		.subscribe(params => {
+			this.hostname = params.hostname;
+		});
+	}
 
 }

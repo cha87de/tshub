@@ -38,7 +38,7 @@ func (serverConn *ServerConn) Read() {
 		var message Message
 		err = json.Unmarshal([]byte(netData), &message)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintf(os.Stderr, "error while unmarshalling json: %s:\n%s\n", err, netData)
 			continue
 		}
 		// fmt.Printf("unmarshalled: %+v\n", message)

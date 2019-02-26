@@ -14,6 +14,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatSelectModule } from '@angular/material/select';
 import { ApiModule } from '../api';
 import { PipesModule } from '../pipes/pipes.module';
+import { PlotterModule } from '../plotter/plotter.module';
 
 @NgModule({
   declarations: [ ListComponent, MainComponent ],
@@ -23,7 +24,8 @@ import { PipesModule } from '../pipes/pipes.module';
     HttpClientModule,
     ApiModule,
     PipesModule,
-
+    PlotterModule,
+    
     // material modules
     MatButtonModule,
     MatToolbarModule,

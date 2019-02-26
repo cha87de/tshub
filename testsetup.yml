@@ -1,0 +1,12 @@
+version: '2'
+services:
+  kvmtop:
+    privileged: true
+    image: cha87de/kvmtop:profiler
+    environment:
+      PARAMS: -c qemu:///system --printer=json --output=tcp --target=127.0.0.1:12345 --cpu --mem --net --disk --io --host --verbose --netdev ethdata --frequency 1
+      PROFILER_PARAMS: --states 4 --history 1 --filterstddevs 256 --outputFreq 5s --buffersize 10
+    volumes:
+    - /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock
+    network_mode: host
+    pid: host
