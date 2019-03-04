@@ -34,8 +34,9 @@ matrix:
       - '7'
       before_script:
       - npm install -g @angular/cli
-      - npm install
+      - cd webui ; npm install
       script:
+      - cd webui
       - ng build --prod --aot --output-path dist
       deploy:
         - provider: script
