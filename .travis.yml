@@ -1,19 +1,45 @@
-language: go
-go:
-  - '1.11.5'
+before_deploy:
+ - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libvirt-dev rpm
+matrix:
+  include:
 
-install:
-  - "go get -d -v ./..."
-  - "go get -u github.com/smartystreets/goconvey"
-  - "go install ./..."
+    - language: go
+      go:
+        - '1.11.5'
+      before_install:
+        - sudo apt-get -qq update
+        - sudo apt-get install -y libvirt-dev rpm
+      install:
+        - "go get -d -v ./..."
+        - "go get -u github.com/smartystreets/goconvey"
+        - "go install ./..."
+        - "mkdir -p dist/linux_amd64 ; cp $GOPATH/bin/tshub ./dist/linux_amd64/"
+      deploy:
+        - provider: script
+          script: rm -rf dist/linux_amd64; curl -sL https://git.io/goreleaser | bash
+          on:
+            tags: true
+            condition: $TRAVIS_OS_NAME = linux
+        - provider: script
+          skip_cleanup: true
+          script: docker build --no-cache -t cha87de/tshub:master . ; docker push cha87de/tshub:master 
+          on:
+            branch: master
 
-deploy:
-  - provider: script
-    script: curl -sL https://git.io/goreleaser | bash
-    on:
-      tags: true
-      condition: $TRAVIS_OS_NAME = linux
+    - sudo: true
+      dist: trusty
+      language: node_js
+      node_js:
+      - '7'
+      before_script:
+      - npm install -g @angular/cli
+      - npm install
+      script:
+      - ng build --prod --aot --output-path dist
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: docker build --no-cache -t cha87de/tshub-webui:master ./webui ; docker push cha87de/tshub-webui:master 
+          on:
+            branch: master      
