@@ -31,7 +31,7 @@ matrix:
       dist: trusty
       language: node_js
       node_js:
-      - '7'
+      - '8'
       before_script:
       - cd webui
       - npm install -g @angular/cli
