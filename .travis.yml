@@ -41,6 +41,6 @@ matrix:
       deploy:
         - provider: script
           skip_cleanup: true
-          script: docker build --no-cache -t cha87de/tshub-webui:master ./webui ; docker push cha87de/tshub-webui:master 
+          script: docker build --no-cache -t cha87de/tshub-webui:master . ; docker push cha87de/tshub-webui:master 
           on:
             branch: master      
