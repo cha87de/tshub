@@ -67,6 +67,7 @@ export class PlotdataComponent implements OnInit, AfterViewInit {
 			// reload
 			// console.info("reload");
 			this.pastData = [];
+			this.futureData = [];
 			this.queryData();
 		});
 	}
@@ -103,11 +104,41 @@ export class PlotdataComponent implements OnInit, AfterViewInit {
 			// console.info(point, item);
 			this.pastData.push(point);
 		});
+		for(let i = 0; i < 30; i++) {
+			let pointPast = {
+				x: i+30,
+				y: undefined
+			};
+			let pointFuture = {
+				x: i,
+				y: undefined
+			};
+			this.pastData.push(pointPast);
+			this.futureData.push(pointFuture);
+		}
+		this.plotdata.future.forEach((item) => {
+			let value = 0;
+			let ts = 0;
+			if (item.value !== undefined) {
+				value = item.value;
+			}
+			if (item.timestamp !== undefined) {
+				ts = item.timestamp;
+			}
+			let point = {
+				x: ts + 30,
+				y: value
+			};
+			// console.info(point, item);
+			this.futureData.push(point);
+		});
 		if (this.chart !== undefined) {
 			// update chart
 			this.chart.data.datasets[0].data = this.pastData;
+			this.chart.data.datasets[1].data = this.futureData;
 			this.chart.update();			
 		}
+		console.info(this.chart.data);
 	}
 
 	createChart() {
@@ -125,13 +156,13 @@ export class PlotdataComponent implements OnInit, AfterViewInit {
 						borderColor: "#3f51b5",
 						data: this.pastData,
 						pointRadius: 0.1
-					}
-					/*{
+					},
+					{
 						label: 'future',
 						borderColor: "#689F38",
 						data: this.futureData,
 						pointRadius: 0.1
-					}*/
+					}
 				]
 			},
 			options: {

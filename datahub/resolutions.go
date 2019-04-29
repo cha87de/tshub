@@ -9,3 +9,11 @@ const (
 	resolution12h   = time.Duration(12) * time.Hour
 	resolution24h   = time.Duration(24) * time.Hour
 )
+
+var resolutions = [...]time.Duration{
+	resolution1min,
+	resolution30min,
+	resolution1h,
+	resolution12h,
+	resolution24h,
+}

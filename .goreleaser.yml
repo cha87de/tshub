@@ -6,12 +6,18 @@ builds:
       - linux
     goarch:
       - amd64
+  - main: ./cmd/tshub-fs
+    binary: tshub-fs
+    goos:
+      - linux
+    goarch:
+      - amd64
 
 nfpm:
   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
   vendor: Christopher B. Hauser
-  homepage: https://cha87de.github.io/tsprofiler/
+  homepage: https://cha87de.github.io/tshub/
   maintainer: Christopher B. Hauser <post@c-ha.de>
   description: A communication endpoint for kvmtop and kvmprofiler
   license: GPL-3.0

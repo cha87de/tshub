@@ -7,6 +7,7 @@ import (
 	"github.com/cha87de/tshub/models"
 	"github.com/cha87de/tshub/restapi/operations"
 	"github.com/cha87de/tshub/util"
+	"github.com/cha87de/tsprofiler/predictor"
 	"github.com/go-openapi/runtime/middleware"
 )
 
@@ -162,9 +163,38 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 			}
 		}
 
+		// compute future data
+		profile, err := datahub.Store.GetByName(domainname)
+		if err != nil {
+			return operations.NewGetDomainPlotdataNotFound()
+		}
+		predictor := predictor.NewPredictor(profile)
+		/*predictor.SetState(map[string]string{
+			"metric_0": "0",
+		})*/
+		simulation := predictor.Simulate(30)
+		future := make([]*models.PlotDataItem, len(simulation))
+		for i, simstep := range simulation {
+			ts := int64(i)
+			var data int64
+
+			// find metric in simulation
+			for _, x := range simstep {
+				if x.Metric == internalMetric {
+					data = x.State.Value
+				}
+			}
+
+			val := float64(data)
+			future[i] = &models.PlotDataItem{
+				Timestamp: ts,
+				Value:     val,
+			}
+		}
+
 		plotdata := &models.PlotData{
 			Metric: metric,
-			Future: []*models.PlotDataItem{},
+			Future: future,
 			Past:   past,
 		}
 

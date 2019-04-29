@@ -14,7 +14,7 @@ matrix:
         - "go get -d -v ./..."
         - "go get -u github.com/smartystreets/goconvey"
         - "go install ./..."
-        - "mkdir -p dist/linux_amd64 ; cp $GOPATH/bin/tshub ./dist/linux_amd64/"
+        - "mkdir -p dist/linux_amd64 ; cp $GOPATH/bin/* ./dist/linux_amd64/"
       deploy:
         - provider: script
           script: rm -rf dist/linux_amd64; curl -sL https://git.io/goreleaser | bash

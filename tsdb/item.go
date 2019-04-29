@@ -16,6 +16,15 @@ func NewItem(values map[string]interface{}) *Item {
 	}
 }
 
+// NewItemTime returns a new Item with given values and given time
+func NewItemTime(values map[string]interface{}, timestamp time.Time) *Item {
+	return &Item{
+		Timestamp: timestamp,
+		Values:    values,
+		counts:    make(map[string]int64),
+	}
+}
+
 // Item represents a set of metric values at a timestamp
 type Item struct {
 	Timestamp time.Time

@@ -41,7 +41,7 @@ func (store *Store) Add(values map[string]interface{}) {
 func (store *Store) rotate(item Item) {
 	emptyValues := make(map[string]interface{})
 	if len(store.items) == 0 {
-		// fmt.Printf("add first empty item ... \n")
+		// TODO problem here with timestamp!!!
 		store.items = append(store.items, *NewItem(emptyValues))
 		return
 	}
@@ -57,7 +57,6 @@ func (store *Store) rotate(item Item) {
 			// time to rotate :-)
 			store.items = store.items[1:]
 		}
-
 	}
 }
 

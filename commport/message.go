@@ -13,6 +13,7 @@ type Message struct {
 	Type      MessageType
 	TSProfile tsmodels.TSProfile
 	TSData    kvmtopmodels.TSData
+	TSInput   tsmodels.TSInput
 }
 
 // MessageType represents the `Message`'s type
@@ -23,6 +24,8 @@ const (
 	MessageTSProfile MessageType = 0
 	// MessageTSData defines the MessageType as a TSData message
 	MessageTSData MessageType = 1
+	// MessageTSInput defines the MessageType as a TSInput message
+	MessageTSInput MessageType = 2
 )
 
 // MarshalJSON marshals Message depending on its type
@@ -31,6 +34,8 @@ func (message *Message) MarshalJSON() ([]byte, error) {
 		return json.Marshal(message.TSProfile)
 	} else if message.Type == MessageTSData {
 		return json.Marshal(message.TSData)
+	} else if message.Type == MessageTSInput {
+		return json.Marshal(message.TSInput)
 	} else {
 		return json.Marshal(nil)
 	}
@@ -54,6 +59,10 @@ func (message *Message) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		json.Unmarshal(profileData, &message.TSProfile)
+	} else if _, ok := temp["metrics"]; ok {
+		// assume TSInput
+		message.Type = MessageTSInput
+		json.Unmarshal(data, &message.TSInput)
 	} else {
 		return errors.New("invalid object value, neither TSData nor TSProfile")
 	}

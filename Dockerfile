@@ -6,6 +6,7 @@ RUN ln -s /usr/lib/libncurses.so.5 /usr/lib/libtinfo.so.5
 
 # add binary
 ADD dist/linux_amd64/tshub /bin/tshub
+ADD dist/linux_amd64/tshub-fs /bin/tshub-fs
 
 # start tshub
 CMD ["/bin/tshub"]
