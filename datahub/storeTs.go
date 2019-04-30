@@ -39,3 +39,20 @@ func (storeTs *storeTs) KeepTs(name string, values map[string]interface{}) {
 func (storeTs *storeTs) GetTs(name string, resolution int) *tsdb.Store {
 	return storeTs.tsdata[name][resolution]
 }
+
+func (storeTs *storeTs) GetTsNameWithField(fieldname string) []string {
+	result := make([]string, 0)
+	defaultResolution := 0
+
+	storeTs.tsdataAccess.Lock()
+	for name, stores := range storeTs.tsdata {
+		store := stores[defaultResolution]
+		field := store.Latest(fieldname)
+		if field != nil {
+			result = append(result, name)
+		}
+	}
+	storeTs.tsdataAccess.Unlock()
+
+	return result
+}

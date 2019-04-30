@@ -15,12 +15,15 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 
 	// implementation for /hosts
 	api.GetHostsHandler = operations.GetHostsHandlerFunc(func(params operations.GetHostsParams) middleware.Responder {
-		hosts := make([]*models.Host, len(datahub.Streamer.Hosts))
+		resolution := 0 // TODO get from request
+		hostnames := datahub.Store.GetTsNameWithField("host_name")
+		hosts := make([]*models.Host, len(hostnames))
 		i := 0
-		for hostname, host := range datahub.Streamer.Hosts {
-			cores, _ := util.GetFloat(host[0].Latest("cpu_cores"))
-			instances, _ := util.GetFloat(host[0].Latest("instances"))
-			ram, _ := util.GetFloat(host[0].Latest("ram_Total"))
+		for _, hostname := range hostnames {
+			host := datahub.Store.GetTs(hostname, resolution)
+			cores, _ := util.GetFloat(host.Latest("cpu_cores"))
+			instances, _ := util.GetFloat(host.Latest("instances"))
+			ram, _ := util.GetFloat(host.Latest("ram_Total"))
 			hostModel := &models.Host{
 				Name:          hostname,
 				Cores:         int64(cores),
@@ -50,7 +53,7 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 		return operations.NewGetHostOK().WithPayload(hostDetails)
 	})
 
-	// implementaiton for /host/{hostname}/plotdata
+	// implementation for /host/{hostname}/plotdata
 	api.GetHostPlotdataHandler = operations.GetHostPlotdataHandlerFunc(func(params operations.GetHostPlotdataParams) middleware.Responder {
 
 		// return operations.NewGetDomainPlotdataInternalServerError()
@@ -58,11 +61,8 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 		metric := params.Metric
 		// timeframe := params.Timeframe
 
-		hostStores, ok := datahub.Streamer.Hosts[hostname]
-		if !ok {
-			return operations.NewGetHostPlotdataNotFound()
-		}
-		hostTimeframeStore := hostStores[0] // TODO align with timeframe param
+		timeframe, _ := strconv.Atoi(*params.Timeframe)
+		hostTimeframeStore := datahub.Store.GetTs(hostname, timeframe)
 		internalMetric := ""
 		if metric == "cpu" {
 			internalMetric = "cpu_total"
@@ -98,10 +98,13 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 
 	// implementaiton for /domains
 	api.GetDomainsHandler = operations.GetDomainsHandlerFunc(func(params operations.GetDomainsParams) middleware.Responder {
+		resolution := 0 // TODO get from request
 		hostname := params.Hostname
+		domainnames := datahub.Store.GetTsNameWithField("UUID")
 		domains := make([]*models.Domain, 0)
-		for domainname, domain := range datahub.Streamer.Domains {
-			if hostname != nil && domain[0].Latest("host_name").(string) != *hostname {
+		for _, domainname := range domainnames {
+			domain := datahub.Store.GetTs(domainname, resolution)
+			if hostname != nil && domain.Latest("host_name").(string) != *hostname {
 				// skip, not requested ...
 				continue
 			}
@@ -130,16 +133,10 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 	api.GetDomainPlotdataHandler = operations.GetDomainPlotdataHandlerFunc(func(params operations.GetDomainPlotdataParams) middleware.Responder {
 		domainname := params.Domainname
 		metric := params.Metric
-		domainStores, ok := datahub.Streamer.Domains[domainname]
-		if !ok {
-			return operations.NewGetDomainPlotdataNotFound()
-		}
-		timeframe, err := strconv.Atoi(*params.Timeframe)
-		if err != nil || timeframe < 0 || timeframe > len(domainStores) {
-			return operations.NewGetDomainPlotdataInternalServerError()
-		}
 
-		domainTimeframeStore := domainStores[timeframe]
+		timeframe, _ := strconv.Atoi(*params.Timeframe)
+		domainTimeframeStore := datahub.Store.GetTs(domainname, timeframe)
+
 		internalMetric := ""
 		if metric == "cpu" {
 			internalMetric = "cpu_total"
@@ -164,7 +161,7 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 		}
 
 		// compute future data
-		profile, err := datahub.Store.GetByName(domainname)
+		profile, err := datahub.Store.GetProfile(domainname)
 		if err != nil {
 			return operations.NewGetDomainPlotdataNotFound()
 		}
@@ -203,14 +200,14 @@ func configureAPI(api *operations.TshubAPI, datahub *datahub.Hub) {
 
 	// implementation for /profiles
 	api.GetProfileNamesHandler = operations.GetProfileNamesHandlerFunc(func(params operations.GetProfileNamesParams) middleware.Responder {
-		names := datahub.Store.GetNames()
+		names := datahub.Store.GetProfileNames()
 		return operations.NewGetProfileNamesOK().WithPayload(names)
 	})
 
 	// implementation for /profile/${profilename}
 	api.GetProfileHandler = operations.GetProfileHandlerFunc(func(params operations.GetProfileParams) middleware.Responder {
 		name := params.Profilename
-		profile, err := datahub.Store.GetByName(name)
+		profile, err := datahub.Store.GetProfile(name)
 		if err != nil {
 			return operations.NewGetProfileNotFound()
 		}

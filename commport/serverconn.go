@@ -10,7 +10,6 @@ import (
 	kvmtopmodels "github.com/cha87de/kvmtop/models"
 	"github.com/cha87de/tshub/datahub"
 	"github.com/cha87de/tshub/util"
-	"github.com/cha87de/tsprofiler/models"
 )
 
 // NewServerConn creates and returns a new instance of ServerConn
@@ -51,10 +50,10 @@ func (serverConn *ServerConn) Read() {
 		} else if message.Type == MessageTSData {
 			// handle most recent monitoring data from kvmtop
 			serverConn.handleKvmtopData(message.TSData)
-		} else if message.Type == MessageTSInput {
+			//} else if message.Type == MessageTSInput {
 			// handle most recent monitoring data
 			// TODO where is the name coming from??
-			serverConn.datahub.Streamer.Put("default-name", message.TSInput)
+			//	serverConn.datahub.Streamer.Put("default-name", message.TSInput)
 		} else {
 			// cannot handle message type
 			continue
@@ -89,20 +88,8 @@ func (serverConn *ServerConn) handleKvmtopData(tsdata kvmtopmodels.TSData) {
 		m2, _ = util.GetFloat(domain["disk_stats_wrbytes"])
 		domain["disk_io"] = m1 + m2
 
-		// transpose data to tsinput
-		metrics := make([]models.TSInputMetric, 0)
-		for key, value := range domain {
-			metrics = append(metrics, models.TSInputMetric{
-				Name:  key,
-				Value: value -----> FLOAT VS INTERFACE ISSUE,
-			})
-		}
-		tsinput := models.TSInput{
-			Metrics: metrics,
-		}
-
 		// send domain to streamer
-		serverConn.datahub.Streamer.Put(domainname, tsinput)
+		serverConn.datahub.Streamer.Put(domainname, domain)
 	}
 
 	// Step 2: handle host data
@@ -110,17 +97,7 @@ func (serverConn *ServerConn) handleKvmtopData(tsdata kvmtopmodels.TSData) {
 	tsdata.Host["instances"] = float64(len(tsdata.Domains))
 	tsdata.Host["host_domains"] = domainlist
 	hostname := tsdata.Host["host_name"].(string)
-	// transpose data to tsinput
-	metrics := make([]models.TSInputMetric, 0)
-	for key, value := range tsdata.Host {
-		metrics = append(metrics, models.TSInputMetric{
-			Name:  key,
-			Value: value -----> FLOAT VS INTERFACE ISSUE,
-		})
-	}
-	tsinput := models.TSInput{
-		Metrics: metrics,
-	}
+
 	// send domain to streamer
-	serverConn.datahub.Streamer.Put(hostname, tsinput)
+	serverConn.datahub.Streamer.Put(hostname, tsdata.Host)
 }
