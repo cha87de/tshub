@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/cha87de/tshub/datahub"
 	"github.com/cha87de/tsprofiler/models"
@@ -80,13 +79,13 @@ func processTSFile(datahub *datahub.Hub, filename string) {
 			log.Fatal(err)
 		}
 
-		var utilValues []float64
+		var utilValues []string
 		for _, rawValue := range record {
-			utilValue, err := strconv.ParseFloat(rawValue, 64)
-			if err != nil {
-				continue
-			}
-			utilValues = append(utilValues, utilValue)
+			//utilValue, err := strconv.ParseFloat(rawValue, 64)
+			//if err != nil {
+			//	continue
+			//}
+			utilValues = append(utilValues, rawValue)
 		}
 		putMeasurement(datahub, utilValues)
 	}
@@ -98,26 +97,17 @@ func processTSFile(datahub *datahub.Hub, filename string) {
 var likelinessSum float64
 var likelinessCount int32
 
-func putMeasurement(datahub *datahub.Hub, utilValue []float64) {
-	metrics := make([]models.TSInputMetric, 0)
+func putMeasurement(datahub *datahub.Hub, utilValue []string) {
+	metrics := make(map[string]interface{})
 	for i, value := range utilValue {
-		metrics = append(metrics, models.TSInputMetric{
-			Name:  fmt.Sprintf("metric_%d", i),
-			Value: value,
-			//FixedMin: options.FixedMin,
-			//FixedMax: options.FixedMax,
-		})
+		metricName := fmt.Sprintf("metric_%d", i)
+		metrics[metricName] = value
 	}
-	tsinput := models.TSInput{
-		Metrics: metrics,
-	}
-	likeliness := datahub.Streamer.Put(profileName, tsinput)
+	likeliness := datahub.Streamer.Put(profileName, metrics)
 	likelinessSum += float64(likeliness)
 	likelinessCount++
 
 	//data := datahub.Store.GetTs("infile", 0).Dump("metric_0")
 	//fmt.Printf("%f\n", data)
-
-	// TODO extend validator / predictor
 
 }

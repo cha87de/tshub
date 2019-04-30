@@ -94,7 +94,7 @@ func (serverConn *ServerConn) handleKvmtopData(tsdata kvmtopmodels.TSData) {
 		for key, value := range domain {
 			metrics = append(metrics, models.TSInputMetric{
 				Name:  key,
-				Value: value,
+				Value: value -----> FLOAT VS INTERFACE ISSUE,
 			})
 		}
 		tsinput := models.TSInput{
@@ -115,7 +115,7 @@ func (serverConn *ServerConn) handleKvmtopData(tsdata kvmtopmodels.TSData) {
 	for key, value := range tsdata.Host {
 		metrics = append(metrics, models.TSInputMetric{
 			Name:  key,
-			Value: value,
+			Value: value -----> FLOAT VS INTERFACE ISSUE,
 		})
 	}
 	tsinput := models.TSInput{
