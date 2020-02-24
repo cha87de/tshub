@@ -17,14 +17,14 @@ type Streamer struct {
 }
 
 // Put transmits a new TSInput monitoring item to the Streamer
-func (streamer *Streamer) Put(name string, input map[string]interface{}) float32 {
+func (streamer *Streamer) Put(name string, input map[string]interface{}) (float32, float32, int) {
 	streamer.hub.Store.KeepTs(name, input)
 
 	profile, err := streamer.hub.Store.GetProfile(name)
 	if err != nil {
 		fmt.Printf("failed to get profile %s: %s", name, err)
-		return 0
+		return 0, 0, 0
 	}
-	likeliness := streamer.hub.Validator.Validate(profile, input)
-	return likeliness
+	likeliness, predictionerror, phaseid := streamer.hub.Validator.Validate(profile, input)
+	return likeliness, predictionerror, phaseid
 }
