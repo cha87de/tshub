@@ -6,7 +6,7 @@ matrix:
 
     - language: go
       go:
-        - '1.11.5'
+        - '1.13'
       before_install:
         - sudo apt-get -qq update
         - sudo apt-get install -y libvirt-dev rpm
